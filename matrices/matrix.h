@@ -26,5 +26,25 @@ void init_identity_matrix(float matrix[3][3]);
  */
 void multiply_matrix_by_scalar(float matrix[3][3], float scalar);
 
+/*
+ Add tranform point.
+*/
+void transform_point(float matrix[3][3], float point[3], float result[3]);
+
+/**
+ * Scales the transformation matrix by sx and sy factors.
+ */
+void scale(float matrix[3][3], float sx, float sy);
+
+/**
+ * Shifts the transformation matrix by tx and ty values.
+ */
+void shift(float matrix[3][3], float tx, float ty);
+
+/**
+ * Rotates the transformation matrix by an angle around the origin.
+ */
+void rotate(float matrix[3][3], float angle);
+
 #endif // MATRIX_H
 

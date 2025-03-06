@@ -1,5 +1,5 @@
 #include "matrix.h"
-
+#include <math.h>
 #include <stdio.h>
 
 void init_zero_matrix(float matrix[3][3])
@@ -61,4 +61,62 @@ void multiply_matrix_by_scalar(float matrix[3][3], float scalar)
             matrix[i][j] *= scalar;
         }
     }
+}
+
+void transform_point(float matrix[3][3], float point[3], float result[3]) {
+    int i, j;
+    for (i = 0; i < 3; ++i) {
+        result[i] = 0;
+        for (j = 0; j < 3; ++j) {
+            result[i] += matrix[i][j] * point[j];
+        }
+    }
+}
+
+void scale(float matrix[3][3], float sx, float sy) {
+    float scale_matrix[3][3] = {
+        { sx,  0,  0 },
+        {  0, sy,  0 },
+        {  0,  0,  1 }
+    };
+
+    float temp[3][3] = {0};
+    add_matrices(matrix, scale_matrix, temp);
+
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            matrix[i][j] = temp[i][j];
+}
+
+void shift(float matrix[3][3], float tx, float ty) {
+    float shift_matrix[3][3] = {
+        { 1,  0, tx },
+        { 0,  1, ty },
+        { 0,  0,  1 }
+    };
+
+    float temp[3][3] = {0};
+    add_matrices(matrix, shift_matrix, temp);
+
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            matrix[i][j] = temp[i][j];
+}
+
+void rotate(float matrix[3][3], float angle) {
+    float cosA = cos(angle);
+    float sinA = sin(angle);
+
+    float rotate_matrix[3][3] = {
+        { cosA, -sinA, 0 },
+        { sinA,  cosA, 0 },
+        {    0,     0, 1 }
+    };
+
+    float temp[3][3] = {0};
+    add_matrices(matrix, rotate_matrix, temp);
+
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            matrix[i][j] = temp[i][j];
 }
