@@ -1,0 +1,48 @@
+# Vertices
+v -0.5 -0.5 -0.5
+v  0.5 -0.5 -0.5
+v  0.5  0.5 -0.5
+v -0.5  0.5 -0.5
+v -0.5 -0.5  0.5
+v  0.5 -0.5  0.5
+v  0.5  0.5  0.5
+v -0.5  0.5  0.5
+
+# Texture Coordinates (example for one face)
+vt 0.0 0.0
+vt 1.0 0.0
+vt 1.0 1.0
+vt 0.0 1.0
+
+# Normals (one for each face direction)
+vn 0.0  0.0 -1.0 # Back
+vn 0.0  0.0  1.0 # Front
+vn 0.0 -1.0  0.0 # Bottom
+vn 0.0  1.0  0.0 # Top
+vn -1.0  0.0  0.0 # Left
+vn  1.0  0.0  0.0 # Right
+
+# Faces (Vertex/TextureCoord/Normal)
+# Front face (vertices 5,6,7,8) (normal 2)
+f 5/1/2 6/2/2 7/3/2
+f 5/1/2 7/3/2 8/4/2
+
+# Back face (vertices 1,2,3,4) (normal 1)
+f 2/1/1 1/2/1 4/3/1
+f 2/1/1 4/3/1 3/4/1
+
+# Left face (vertices 1,5,8,4) (normal 5)
+f 1/1/5 5/2/5 8/3/5
+f 1/1/5 8/3/5 4/4/5
+
+# Right face (vertices 2,6,7,3) (normal 6)
+f 6/1/6 2/2/6 3/3/6
+f 6/1/6 3/3/6 7/4/6
+
+# Top face (vertices 4,3,7,8) (normal 4)
+f 4/1/4 3/2/4 7/3/4
+f 4/1/4 7/3/4 8/4/4
+
+# Bottom face (vertices 1,2,6,5) (normal 3)
+f 1/1/3 2/2/3 6/3/3
+f 1/1/3 6/3/3 5/4/3

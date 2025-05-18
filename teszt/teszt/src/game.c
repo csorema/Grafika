@@ -2,6 +2,7 @@
 #include "pong.h"
 
 #include <GL/gl.h>
+#include <GL/glu.h>
 #include <SDL2/SDL_image.h>
 #include <stdio.h>
 #include <math.h>
@@ -91,7 +92,7 @@ void render_controls(Game* game)
 void handle_game_events(Game* game)
 {
     SDL_Event event;
-    int x, y;
+    //int x, y;
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
@@ -109,20 +110,20 @@ void handle_game_events(Game* game)
                 game->is_running = false;
                 break;
             case SDL_SCANCODE_W:
-                set_left_pad_speed(&(game->pong), -300);
-                break;
-            case SDL_SCANCODE_S:
                 set_left_pad_speed(&(game->pong), +300);
                 break;
+            case SDL_SCANCODE_S:
+                set_left_pad_speed(&(game->pong), -300);
+                break;
             case SDL_SCANCODE_UP:
-                game->pong.ball.radius += 2.0f;
+                game->pong.ball.radius -= 2.0f;
                 if (game->pong.ball.radius > MAX_BALL_RADIUS) {
                     game->pong.ball.radius = MAX_BALL_RADIUS;
                 }
                 printf("Ball radius increased: %.1f\n", game->pong.ball.radius);
                 break;
             case SDL_SCANCODE_DOWN:
-                game->pong.ball.radius -= 2.0f;
+                game->pong.ball.radius += 2.0f;
                 if (game->pong.ball.radius < MIN_BALL_RADIUS) {
                     game->pong.ball.radius = MIN_BALL_RADIUS;
                 }
@@ -146,10 +147,14 @@ void handle_game_events(Game* game)
             }
             break;
 
-        case SDL_MOUSEMOTION:
+            case SDL_MOUSEMOTION:
             if (!show_controls) {
-                SDL_GetMouseState(&x, &y);
-                set_right_pad_position(&(game->pong), y - game->pong.right_pad.height / 2.0f);
+                int mouse_sdl_x, mouse_sdl_y;
+                SDL_GetMouseState(&mouse_sdl_x, &mouse_sdl_y);
+                
+                float world_y_for_mouse = (float)game->height - (float)mouse_sdl_y;
+                
+                set_right_pad_position(&(game->pong), world_y_for_mouse - game->pong.right_pad.height / 2.0f);
             }
             break;
 
@@ -189,28 +194,27 @@ void update_game(Game* game)
     update_pong(&(game->pong), elapsed_time, game);
 }
 
-void render_game(Game* game)
-{
+void render_game(Game* game) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // render background
+    glDisable(GL_LIGHTING);
     glEnable(GL_TEXTURE_2D);
     GLuint background_texture = load_texture("src/pongtable.jpg");
     glBindTexture(GL_TEXTURE_2D, background_texture);
 
+    glPushMatrix();
     glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0f, 0.0f);
-    glTexCoord2f(1.0f, 0.0f); glVertex2f((float)game->width, 0.0f);
-    glTexCoord2f(1.0f, 1.0f); glVertex2f((float)game->width, (float)game->height);
-    glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, (float)game->height);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(0.0f, 0.0f, -1.0f);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f((float)game->width, 0.0f, -1.0f);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f((float)game->width, (float)game->height, -1.0f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(0.0f, (float)game->height, -1.0f);
     glEnd();
-
+    glPopMatrix();
     glDisable(GL_TEXTURE_2D);
+    glEnable(GL_LIGHTING);
 
-    // render game objects
     render_pong(&(game->pong));
 
-    // render controls if the flag is set
+
     if (show_controls) {
         render_controls(game);
     }
@@ -254,21 +258,54 @@ bool init_sdl(Game* game)
     return true;
 }
 
-void init_opengl(Game* game)
-{
+void init_opengl(Game* game) {
     glShadeModel(GL_SMOOTH);
     glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
+    glClearDepth(1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_NORMALIZE);
+
+    GLfloat light_ambient[] = {0.3f, 0.3f, 0.3f, 1.0f};
+    GLfloat light_diffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
+    GLfloat light_specular[] = {0.5f, 0.5f, 0.5f, 1.0f};
+
+    GLfloat light_position[] = {(float)game->width / 2.0f, (float)game->height, 500.0f, 1.0f}; // Positional light above center
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+    glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+    GLfloat mat_specular[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+    GLfloat mat_shininess[] = { 50.0f };
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess);
+
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, (double)game->width, (double)game->height, 0, -1.0, 1.0);
+    float aspect = (float)game->width / (float)game->height;
+    gluPerspective(45.0f, aspect, 10.0f, game->width * 2.0f);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
+    gluLookAt(
+        game->width / 2.0f, game->height / 2.0f - game->height * 0.3f, (double)game->height * 1.2,
+        game->width / 2.0f, game->height / 2.0f, 0.0f,
+        0.0f, 1.0f, 0.0f
+    );
+
     glViewport(0, 0, game->width, game->height);
 }
-
 GLuint load_texture(const char* file_path)
 {
     SDL_Surface* surface = IMG_Load(file_path); // use the provided file path

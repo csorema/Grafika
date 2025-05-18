@@ -5,7 +5,8 @@
 #define MAX_BALL_RADIUS 80.0f
 #define INITIAL_ROTATION_SPEED 90.0f
 
-#include <GL/gl.h> // Include OpenGL header for GLuint
+#include "model.h"
+#include <GL/gl.h>
 
 /**
  * Ball position and speed
@@ -19,7 +20,8 @@ typedef struct Ball
     float speed_y;
     float angle;
     float rotation_speed;
-    GLuint texture_id; // OpenGL texture ID
+    GLuint texture_id;
+    Model model;
 } Ball;
 
 /**

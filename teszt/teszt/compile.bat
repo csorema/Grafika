@@ -1,1 +1,1 @@
-gcc -Iinclude/ src/ball.c src/game.c src/main.c src/pad.c src/pong.c -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lopengl32 -lm -o pong.exe -Wall -Wextra -Wpedantic
+gcc -Iinclude/ src/ball.c src/draw.c src/game.c src/load.c src/main.c src/model.c src/pad.c src/pong.c -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lopengl32 -lm -o pong.exe -Wall -Wextra -Wpedantic -lglu32

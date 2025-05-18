@@ -1,16 +1,19 @@
 #include "ball.h"
+#include "load.h"
+#include "draw.h"
 
 #include <GL/gl.h>
-
 #include <math.h>
+
+
+
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
 
-void init_ball(Ball* ball, float x, float y)
-{
+void init_ball(Ball* ball, float x, float y) {
     ball->x = x;
     ball->y = y;
     ball->radius = 30;
@@ -18,6 +21,13 @@ void init_ball(Ball* ball, float x, float y)
     ball->speed_y = 300;
     ball->angle = 0.0f;
     ball->rotation_speed = INITIAL_ROTATION_SPEED;
+    ball->texture_id = 0;
+
+    init_model(&ball->model);
+
+    if (!load_model(&ball->model, "assets/models/cube.obj")) {
+        printf("ERROR: Failed to load ball model 'assets/models/ball.obj'\n");
+    }
 }
 
 void update_ball(Ball* ball, double time)
@@ -33,9 +43,52 @@ void update_ball(Ball* ball, double time)
     }
 }
 
-void render_ball(Ball* ball)
+void render_ball(Ball* ball) {
+    glPushMatrix();
+
+    glTranslatef(ball->x, ball->y, -0.99f); 
+
+    glDisable(GL_LIGHTING);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glColor4f(0.0f, 0.0f, 0.0f, 0.4f);
+
+    float shadow_radius = ball->radius * 0.9f;
+    int num_segments = 24;
+
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex2f(0.0f, 0.0f);
+    for (int i = 0; i <= num_segments; i++) {
+        float angle_rad = (float)i / (float)num_segments * 2.0f * M_PI;
+        glVertex2f(cosf(angle_rad) * shadow_radius, sinf(angle_rad) * shadow_radius);
+    }
+    glEnd();
+
+    glDisable(GL_BLEND);
+    glEnable(GL_LIGHTING);
+
+    glPopMatrix();
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, ball->texture_id);
+
+    glPushMatrix();
+    glTranslatef(ball->x, ball->y, 0.0f);
+
+    glRotatef(ball->angle, 0.0f, 1.0f, 0.0f); 
+    glScalef(ball->radius, ball->radius, ball->radius);
+    glColor3f(1.0f, 1.0f, 1.0f); 
+
+    draw_model(&ball->model);
+
+    glPopMatrix();
+    glDisable(GL_TEXTURE_2D);
+}
+
+/*void render_ball(Ball* ball)
 {
-    /*double angle_rad;
+    double angle_rad;
     double x_vtx;
     double y_vtx;
 
@@ -60,28 +113,24 @@ void render_ball(Ball* ball)
     }
     glEnd();
 
-    glPopMatrix();*/
+    glPopMatrix();
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, ball->texture_id);
 
     glPushMatrix();
     glTranslatef(ball->x, ball->y, 0.0f);
-    glRotatef(ball->angle, 0.0f, 0.0f, 1.0f);
+    glRotatef(ball->angle, 0.0f, 0.1f, 1.0f);
+    glScalef(ball->radius, ball->radius, ball->radius);
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    draw_model(&ball->model); 
 
     
 
-    // Draw a textured circle using a triangle fan
-    glBegin(GL_TRIANGLE_FAN);
-    glTexCoord2f(0.5f, 0.5f); glVertex2f(0.0f, 0.0f); // Center of the circle
-    for (int i = 0; i <= 360; i += 10) {
-        float theta = i * M_PI / 180.0f;
-        float x = cosf(theta) * ball->radius;
-        float y = sinf(theta) * ball->radius;
-        glTexCoord2f(0.5f + 0.5f * cosf(theta), 0.5f + 0.5f * sinf(theta));
-        glVertex2f(x, y);
-    }
-    glEnd();
+    
+
+
 
     glPopMatrix();
     glDisable(GL_TEXTURE_2D); 
-}
+} */
